@@ -44,5 +44,6 @@ export enum HeaderEnum {
 
 export enum MimeTypeEnum {
   MULTIPART_ALTERNATIVE = 'multipart/alternative',
-  APPLICATION_PDF = 'application/pdf'
+  APPLICATION_PDF = 'application/pdf',
+  APPLICATION_MSWORD = 'application/msword'
 }

@@ -2,11 +2,23 @@
 import { gmail_v1, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import { GaxiosResponse } from 'gaxios'
-import { authorize } from '../infra'
-import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
 import { keyBy } from '../../utils/array'
+import { authorize } from '../infra'
+import { Attachment, MessageSimple } from '../dominio/entity'
+import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
 
-type LabelsReturn = gmail_v1.Schema$Label[] | undefined
+type LabelsArgs = gmail_v1.Schema$Label[] | undefined
+
+type ParseAttachmentToAttachmentSimpleWithDataArgs = {
+  attachmentBody: GaxiosResponse<gmail_v1.Schema$MessagePartBody>;
+  attachment: Attachment;
+}
+
+type GetAttachmentSimpleWithDataByAttachmentAndMessageIdArgs = {
+  attachment: Attachment;
+  messageId: string;
+}
+
 
 class Gmail {
   auth: OAuth2Client
@@ -17,7 +29,7 @@ class Gmail {
     this.gmail = google.gmail({ auth: this.auth, version: 'v1' })
   }
 
-  async getLabels(): Promise<LabelsReturn> {
+  async getLabels(): Promise<LabelsArgs> {
     const res = await this.gmail.users.labels.list({ userId: user.userId })
 
     return res.data.labels
@@ -35,9 +47,9 @@ class Gmail {
     return message
   }
 
-  parseMessageToMessageSimple(message: GaxiosResponse<gmail_v1.Schema$Message>) {
+  parseMessageToMessageSimple(message: GaxiosResponse<gmail_v1.Schema$Message>): MessageSimple {
     const headers = keyBy(message.data.payload?.headers ?? [], 'name')
-    const attachments = message.data.payload?.parts
+    const attachments: Attachment[] = message.data.payload?.parts
       ?.filter((part) => part.mimeType === MimeTypeEnum.APPLICATION_PDF)
       .map(({ filename, mimeType, partId, body }) => ({ attachmentId: body?.attachmentId, filename, mimeType, partId }))
       ?? []
@@ -61,19 +73,48 @@ class Gmail {
     return this.parseMessageToMessageSimple(message)
   }
 
-  async getAttachmentsByIdAndMessageId(params: { attachmentId: string, messageId: string }): Promise<GaxiosResponse<gmail_v1.Schema$MessagePartBody>> {
+  async getAttachmentWithDataByIdAndMessageId(args: { attachmentId: string, messageId: string }): Promise<GaxiosResponse<gmail_v1.Schema$MessagePartBody>> {
     const attachment = await this.gmail.users.messages.attachments.get({
-      id       : params.attachmentId,
-      messageId: params.messageId,
+      id       : args.attachmentId,
+      messageId: args.messageId,
       userId   : user.userId
     })
 
     return attachment
   }
+
+  parseAttachmentToAttachmentSimpleWithData(args: ParseAttachmentToAttachmentSimpleWithDataArgs): Attachment {
+    const { attachmentBody, attachment } = args
+
+    return {
+      ...attachment,
+      data: attachmentBody.data.data,
+      size: attachmentBody.data.size
+    }
+  }
+
+  async getAttachmentSimpleWithDataByAttachmentAndMessageId(args: GetAttachmentSimpleWithDataByAttachmentAndMessageIdArgs): Promise<Attachment> {
+    const { messageId, attachment } = args
+
+    if(!attachment.attachmentId) throw new Error('attachmentId is required')
+
+    const attachmentBody = await this.getAttachmentWithDataByIdAndMessageId({
+      attachmentId: attachment.attachmentId,
+      messageId
+    })
+
+    return this.parseAttachmentToAttachmentSimpleWithData({
+      attachment,
+      attachmentBody
+    })
+  }
 }
 
-const LABEL_MONITOR = 'GMAIL-API:'
+const FLAG_MONITOR = 'GMAIL-API:'
+const DIR_DOWNLOAD = 'src/google-api/usecase/download'
+
 async function main() {
+  console.log(FLAG_MONITOR, '-----------------------', 'Start', '-----------------------')
   try {
     const authClient = await authorize()
     if (!authClient) throw new Error('Credentials not found')
@@ -84,27 +125,47 @@ async function main() {
 
     const messages = await gmail.getMessagesByLabelIds(labelIds)
 
-    console.log(LABEL_MONITOR, 'Messages:', messages.data.messages?.length || 0)
+    console.log(FLAG_MONITOR, 'Messages:', messages.data.messages?.length || 0)
     if (!messages.data.messages?.length) return
 
-    const [firstMessage] = messages.data.messages
-    if (!firstMessage?.id) throw new Error('First message not found')
+    const countMessages = messages.data.messages.length
+    for (let indexMessage = 1; indexMessage <= countMessages; indexMessage++) {
+      const message = messages.data.messages[indexMessage - 1]
+      console.log(FLAG_MONITOR, `${indexMessage}/${countMessages}`, '-------------------------------------------------')
+      if (!message?.id) {
+        console.log(FLAG_MONITOR, indexMessage, 'messageId is required')
 
-    console.log(LABEL_MONITOR, 'Message Simple', firstMessage.id, ':')
-    const messageSimple = await gmail.getMessageSimpleById(firstMessage.id)
-    console.log(LABEL_MONITOR, JSON.stringify(messageSimple, null, 2))
-    if (!messageSimple.attachments?.length) return
+        continue
+      }
 
-    const [firstAttachment] = messageSimple.attachments
-    if (!firstAttachment?.attachmentId) throw new Error('First attachment not found')
+      console.log(FLAG_MONITOR, indexMessage, 'Message', message.id, ':')
+      const messageSimple = await gmail.getMessageSimpleById(message.id)
+      console.log(FLAG_MONITOR, JSON.stringify(messageSimple, null, 2))
 
-    const attachment = await gmail.getAttachmentsByIdAndMessageId({
-      attachmentId: firstAttachment.attachmentId,
-      messageId   : messageSimple.id
-    })
-    console.log(LABEL_MONITOR, JSON.stringify(attachment, null, 2))
+      if (!messageSimple.attachments?.length) {
+        console.log(FLAG_MONITOR, indexMessage, 'attachments not found')
+        // make unread
+
+        return
+      }
+
+      const countAttachments = messageSimple.attachments.length
+      for (let indexAttachment = 1; indexAttachment <= countAttachments; indexAttachment++) {
+        const attachment = messageSimple.attachments[indexAttachment - 1]
+        console.log(FLAG_MONITOR, indexMessage, `${indexAttachment}/${countAttachments}:`, attachment.filename)
+        const attachmentWithData = await gmail.getAttachmentSimpleWithDataByAttachmentAndMessageId({
+          attachment,
+          messageId: message.id
+        })
+        console.log(FLAG_MONITOR, indexMessage, indexAttachment, 'Exists data ', !!attachmentWithData.data)
+      }
+    }
+
+
   } catch (error) {
-    console.log(LABEL_MONITOR, 'Error >', error)
+    console.error(FLAG_MONITOR, error)
+  } finally {
+    console.log(FLAG_MONITOR, '-----------------------', 'End', '-----------------------')
   }
 }
 
