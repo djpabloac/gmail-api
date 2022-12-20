@@ -12,6 +12,7 @@
     "@types/dotenv": "^8.2.0",
     "@types/imap-simple": "^4.2.5",
     "@types/node": "^18.11.15",
+    "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
     "eslint": "^8.29.0",
@@ -23,6 +24,7 @@
     "@google-cloud/local-auth": "2.1.0",
     "dotenv": "^16.0.3",
     "googleapis": "105",
-    "imap-simple": "^5.1.0"
+    "imap-simple": "^5.1.0",
+    "uuid": "^9.0.0"
   }
 }

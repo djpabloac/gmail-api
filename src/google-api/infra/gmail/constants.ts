@@ -47,3 +47,8 @@ export enum MimeTypeEnum {
   APPLICATION_PDF = 'application/pdf',
   APPLICATION_MSWORD = 'application/msword'
 }
+
+export const FileType = {
+  [MimeTypeEnum.APPLICATION_MSWORD.toString()]: 'doc',
+  [MimeTypeEnum.APPLICATION_PDF.toString()]   : 'pdf'
+}

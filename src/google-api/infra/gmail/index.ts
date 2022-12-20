@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 import { gmail_v1, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import { GaxiosResponse } from 'gaxios'
-import { keyBy } from '../../utils/array'
-import { authorize } from '../infra'
-import { Attachment, MessageSimple } from '../dominio/entity'
+import { keyBy } from '../../../utils/array'
+import { Attachment, MessageSimple } from '../../dominio/entity'
 import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
+import { extractEmails } from '../../../utils/regex'
 
 type LabelsArgs = gmail_v1.Schema$Label[] | undefined
 
@@ -19,8 +18,7 @@ type GetAttachmentSimpleWithDataByAttachmentAndMessageIdArgs = {
   messageId: string;
 }
 
-
-class Gmail {
+export default class Gmail {
   auth: OAuth2Client
   gmail: gmail_v1.Gmail
 
@@ -54,16 +52,18 @@ class Gmail {
       .map(({ filename, mimeType, partId, body }) => ({ attachmentId: body?.attachmentId, filename, mimeType, partId }))
       ?? []
 
+    const [from] = extractEmails(headers[HeaderEnum.FROM]?.value || '')
+    const [firstTo] = extractEmails(headers[HeaderEnum.TO]?.value || '')
 
     return {
       attachments,
       body    : message.data.snippet || '',
       date    : headers[HeaderEnum.DATE]?.value || '',
-      from    : headers[HeaderEnum.FROM]?.value || '',
+      from,
       id      : message.data.id || '',
       subject : headers[HeaderEnum.SUBJECT]?.value || '',
       threadId: message.data.threadId || '',
-      to      : headers[HeaderEnum.TO]?.value || ''
+      to      : firstTo
     }
   }
 
@@ -96,7 +96,7 @@ class Gmail {
   async getAttachmentSimpleWithDataByAttachmentAndMessageId(args: GetAttachmentSimpleWithDataByAttachmentAndMessageIdArgs): Promise<Attachment> {
     const { messageId, attachment } = args
 
-    if(!attachment.attachmentId) throw new Error('attachmentId is required')
+    if (!attachment.attachmentId) throw new Error('attachmentId is required')
 
     const attachmentBody = await this.getAttachmentWithDataByIdAndMessageId({
       attachmentId: attachment.attachmentId,
@@ -108,65 +108,24 @@ class Gmail {
       attachmentBody
     })
   }
-}
 
-const FLAG_MONITOR = 'GMAIL-API:'
-const DIR_DOWNLOAD = 'src/google-api/usecase/download'
+  async markAsRead(messageId: string): Promise<void> {
+    await this.gmail.users.messages.modify({
+      id         : messageId,
+      requestBody: {
+        'removeLabelIds': [ LabelEnum.UNREAD ]
+      },
+      userId: user.userId
+    })
+  }
 
-async function main() {
-  console.log(FLAG_MONITOR, '-----------------------', 'Start', '-----------------------')
-  try {
-    const authClient = await authorize()
-    if (!authClient) throw new Error('Credentials not found')
-
-    const gmail = new Gmail(authClient)
-
-    const labelIds = [LabelEnum.UNREAD]
-
-    const messages = await gmail.getMessagesByLabelIds(labelIds)
-
-    console.log(FLAG_MONITOR, 'Messages:', messages.data.messages?.length || 0)
-    if (!messages.data.messages?.length) return
-
-    const countMessages = messages.data.messages.length
-    for (let indexMessage = 1; indexMessage <= countMessages; indexMessage++) {
-      const message = messages.data.messages[indexMessage - 1]
-      console.log(FLAG_MONITOR, `${indexMessage}/${countMessages}`, '-------------------------------------------------')
-      if (!message?.id) {
-        console.log(FLAG_MONITOR, indexMessage, 'messageId is required')
-
-        continue
-      }
-
-      console.log(FLAG_MONITOR, indexMessage, 'Message', message.id, ':')
-      const messageSimple = await gmail.getMessageSimpleById(message.id)
-      console.log(FLAG_MONITOR, JSON.stringify(messageSimple, null, 2))
-
-      if (!messageSimple.attachments?.length) {
-        console.log(FLAG_MONITOR, indexMessage, 'attachments not found')
-        // make unread
-
-        return
-      }
-
-      const countAttachments = messageSimple.attachments.length
-      for (let indexAttachment = 1; indexAttachment <= countAttachments; indexAttachment++) {
-        const attachment = messageSimple.attachments[indexAttachment - 1]
-        console.log(FLAG_MONITOR, indexMessage, `${indexAttachment}/${countAttachments}:`, attachment.filename)
-        const attachmentWithData = await gmail.getAttachmentSimpleWithDataByAttachmentAndMessageId({
-          attachment,
-          messageId: message.id
-        })
-        console.log(FLAG_MONITOR, indexMessage, indexAttachment, 'Exists data ', !!attachmentWithData.data)
-      }
-    }
-
-
-  } catch (error) {
-    console.error(FLAG_MONITOR, error)
-  } finally {
-    console.log(FLAG_MONITOR, '-----------------------', 'End', '-----------------------')
+  async markAsUnread(messageId: string): Promise<void> {
+    await this.gmail.users.messages.modify({
+      id         : messageId,
+      requestBody: {
+        'addLabelIds': [ LabelEnum.UNREAD ]
+      },
+      userId: user.userId
+    })
   }
 }
-
-main()

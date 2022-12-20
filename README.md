@@ -21,9 +21,11 @@ yarn start:dev
 
 To run this project, you will need to add the following environment variables to your `.env` file.
 
-`EMAIL_USER`
+`EMAIL_USER=<email>`
 
-`EMAIL_PASSWORD`
+`EMAIL_PASSWORD=<password>`
+
+`ENABLED_PRINT_CONSOLE=false`
 
 ## Authors
 
