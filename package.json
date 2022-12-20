@@ -1,0 +1,28 @@
+{
+  "name": "gmail-api",
+  "version": "1.0.0",
+  "scripts": {
+    "tsc": "tsc",
+    "lint": "eslint --ignore-path .gitignore --fix .",
+    "start:prod": "NODE_ENV=production node ./dist/src/index.js",
+    "start:dev": "NODE_ENV=development ts-node-dev ./src/index.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/imap-simple": "^4.2.5",
+    "@types/node": "^18.11.15",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^8.29.0",
+    "eslint-plugin-sort-keys-fix": "^1.1.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "2.1.0",
+    "dotenv": "^16.0.3",
+    "googleapis": "105",
+    "imap-simple": "^5.1.0"
+  }
+}

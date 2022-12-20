@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+      "target": "es2019",
+      "lib": ["es6"],
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "esModuleInterop": true,
+      "removeComments": true,
+      "isolatedModules": true,
+      "allowSyntheticDefaultImports": true,
+      "noImplicitAny": true,
+      "resolveJsonModule": true,
+      "noImplicitThis": true,
+      "noImplicitReturns": true,
+      "skipLibCheck": true,
+      "outDir": "./dist",
+      "strict": true
+  },
+  "include": [
+    "src",
+    "bin"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/*.js"
+  ]
+}
