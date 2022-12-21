@@ -14,7 +14,7 @@ const SCOPES = [
   'https://mail.google.com/',
   'https://www.googleapis.com/auth/gmail.modify'
 ]
-const DIR_GMAIL_API = 'src/google-api/infra/auth/credentials'
+const DIR_GMAIL_API = 'src/shared/google-api/infra/auth/credentials'
 const TOKEN_PATH = path.join(process.cwd(), `${DIR_GMAIL_API}/token.json`)
 const CREDENTIALS_PATH = path.join(process.cwd(), `${DIR_GMAIL_API}/credentials.json`)
 

@@ -2,14 +2,14 @@
 import FS from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { Auth, Gmail } from '../../infra'
-import { FileType, LabelEnum } from '../../infra/gmail/constants'
+import { Auth, Gmail } from '../shared/google-api/infra'
+import { FileType, LabelEnum } from '../shared/google-api/infra/gmail/constants'
 
 const fs = FS.promises
 
 const ENABLED_PRINT_CONSOLE = process.env.ENABLED_PRINT_CONSOLE === 'true'
 const FLAG_MONITOR = 'GMAIL-API:'
-const DIR_DOWNLOAD = 'src/google-api/usecase/gmail/download'
+const DIR_DOWNLOAD = 'src/gmail/download'
 
 async function main() {
   console.log(FLAG_MONITOR, '-----------------------', 'Start', '-----------------------')
@@ -75,11 +75,11 @@ async function main() {
           attachmentWithData.filename :
           `gmail_${attachmentId.substring(0, 8)}.${fileType}`
 
-        const relativeDirname = path.join(DIR_DOWNLOAD, shortFromEmail)
-        const relativeFileName = path.join(relativeDirname, filename)
+        const relativeDirName = path.join(DIR_DOWNLOAD, shortFromEmail)
+        const relativeFileName = path.join(relativeDirName, filename)
 
         if(!attachmentWithData.data) continue
-        await fs.mkdir(relativeDirname, {recursive: true})
+        await fs.mkdir(relativeDirName, {recursive: true})
         await fs.writeFile(relativeFileName, Buffer.from(attachmentWithData.data, 'base64'))
       }
 

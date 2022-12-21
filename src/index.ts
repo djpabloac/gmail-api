@@ -1,3 +1,3 @@
 export {}
 
-require('./google-api/usecase')
+require('./gmail')

@@ -1,10 +1,10 @@
 import { gmail_v1, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import { GaxiosResponse } from 'gaxios'
-import { keyBy } from '../../../utils/array'
+import { keyBy } from '../../../../utils/array'
 import { Attachment, MessageSimple } from '../../dominio/entity'
 import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
-import { extractEmails } from '../../../utils/regex'
+import { extractEmails } from '../../../../utils/regex'
 
 type LabelsArgs = gmail_v1.Schema$Label[] | undefined
 

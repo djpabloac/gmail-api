@@ -1,3 +1,0 @@
-export {}
-
-require('./gmail')

@@ -27,6 +27,14 @@ To run this project, you will need to add the following environment variables to
 
 `ENABLED_PRINT_CONSOLE=false`
 
+`BUCKET_DIR=<dir_upload>`
+
+`AWS_ACCESS_KEY_ID=<access_key_id>`
+
+`AWS_SECRET_ACCESS_KEY=<secret_access_key>`
+
+`AWS_REGION=<region>`
+
 ## Authors
 
 - [@dj.pablo.ac](https://gitlab.com/dj.pablo.ac)

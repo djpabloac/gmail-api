@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@google-cloud/local-auth": "2.1.0",
+    "aws-sdk": "^2.1279.0",
     "dotenv": "^16.0.3",
     "googleapis": "105",
     "imap-simple": "^5.1.0",

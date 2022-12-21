@@ -5,4 +5,4 @@ node_modules
 dist
 credentials.json
 token.json
-src/google-api/usecase/gmail/download/*
+src/gmail/download/*
