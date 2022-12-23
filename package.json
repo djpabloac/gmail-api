@@ -5,11 +5,13 @@
     "tsc": "tsc",
     "lint": "eslint --ignore-path .gitignore --fix .",
     "start:prod": "NODE_ENV=production node ./dist/src/index.js",
+    "start:stg": "NODE_ENV=staging ts-node-dev ./src/index.ts",
     "start:dev": "NODE_ENV=development ts-node-dev ./src/index.ts"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
+    "@types/html-to-text": "^8.1.1",
     "@types/imap-simple": "^4.2.5",
     "@types/node": "^18.11.15",
     "@types/uuid": "^9.0.0",
@@ -25,7 +27,9 @@
     "aws-sdk": "^2.1279.0",
     "dotenv": "^16.0.3",
     "googleapis": "105",
+    "html-to-text": "^9.0.3",
     "imap-simple": "^5.1.0",
+    "urlencode3": "^1.0.1",
     "uuid": "^9.0.0"
   }
 }

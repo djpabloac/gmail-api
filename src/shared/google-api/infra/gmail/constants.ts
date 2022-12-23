@@ -45,7 +45,9 @@ export enum HeaderEnum {
 export enum MimeTypeEnum {
   MULTIPART_ALTERNATIVE = 'multipart/alternative',
   APPLICATION_PDF = 'application/pdf',
-  APPLICATION_MSWORD = 'application/msword'
+  APPLICATION_MSWORD = 'application/msword',
+  APPLICATION_VND_MSWORD = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  TEXT_HTML = 'text/html'
 }
 
 export const FileType = {

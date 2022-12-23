@@ -9,12 +9,19 @@ export interface Attachment {
   size?: Maybe<number>;
 }
 
+export interface Part {
+  mimeType?: Maybe<string>;
+  partId?: Maybe<string>;
+  data?: Maybe<string>;
+}
+
 export interface MessageSimple {
   attachments: Attachment[];
   body: string;
   date: string;
   from: string;
   id: string;
+  links: string[];
   subject: string;
   threadId: string;
   to: string;

@@ -1,3 +1,14 @@
-export {}
+import 'dotenv/config'
+import { config } from './shared/config'
+import { processMessageUnread } from './gmail'
+import { processUpload } from './upload'
 
-require('./gmail')
+async function main() {
+  if (config.stage.enabledMessageUnread)
+    await processMessageUnread()
+
+  if (config.stage.enabledUpload)
+    await processUpload()
+}
+
+main()

@@ -18,12 +18,7 @@ const DIR_GMAIL_API = 'src/shared/google-api/infra/auth/credentials'
 const TOKEN_PATH = path.join(process.cwd(), `${DIR_GMAIL_API}/token.json`)
 const CREDENTIALS_PATH = path.join(process.cwd(), `${DIR_GMAIL_API}/credentials.json`)
 
-class Auth {
-  /**
- * Reads previously authorized credentials from the save file.
- *
- * @return {Promise<OAuth2Client|null>}
- */
+export default class Auth {
   private async loadSavedCredentialsIfExist(): Promise<OAuth2Client | null> {
     try {
       const content = await fs.readFile(TOKEN_PATH)
@@ -35,12 +30,6 @@ class Auth {
     }
   }
 
-  /**
-   * Serializes credentials to a file compatible with GoogleAUth.fromJSON.
-   *
-   * @param {OAuth2Client} client
-   * @return {Promise<void>}
-   */
   private async saveCredentials(client: OAuth2Client) {
     const content = await fs.readFile(CREDENTIALS_PATH)
     const keys = JSON.parse(content.toString())
@@ -55,10 +44,6 @@ class Auth {
     await fs.writeFile(TOKEN_PATH, payload)
   }
 
-  /**
-   * Load or request or authorization to call APIs.
-   *
-   */
   async authorize() {
     const client = await this.loadSavedCredentialsIfExist()
     if (client)
@@ -77,5 +62,3 @@ class Auth {
   }
 
 }
-
-export default new Auth()

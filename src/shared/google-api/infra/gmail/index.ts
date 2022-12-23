@@ -2,9 +2,10 @@ import { gmail_v1, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import { GaxiosResponse } from 'gaxios'
 import { keyBy } from '../../../../utils/array'
-import { Attachment, MessageSimple } from '../../dominio/entity'
+import { Attachment, Part, MessageSimple } from '../../dominio/entity'
 import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
-import { extractEmails } from '../../../../utils/regex'
+import { extractEmails, extractTextBetweenSquareBrackets } from '../../../../utils/regex'
+import { convertHtmlToText } from '../../../../utils/convert'
 
 type LabelsArgs = gmail_v1.Schema$Label[] | undefined
 
@@ -46,21 +47,37 @@ export default class Gmail {
   }
 
   parseMessageToMessageSimple(message: GaxiosResponse<gmail_v1.Schema$Message>): MessageSimple {
+    const mimeTypeAttachment = [MimeTypeEnum.APPLICATION_PDF, MimeTypeEnum.APPLICATION_MSWORD, MimeTypeEnum.APPLICATION_VND_MSWORD]
     const headers = keyBy(message.data.payload?.headers ?? [], 'name')
     const attachments: Attachment[] = message.data.payload?.parts
-      ?.filter((part) => part.mimeType === MimeTypeEnum.APPLICATION_PDF)
+      ?.filter((part) => part.mimeType && mimeTypeAttachment.includes(part.mimeType as MimeTypeEnum))
       .map(({ filename, mimeType, partId, body }) => ({ attachmentId: body?.attachmentId, filename, mimeType, partId }))
+      ?? []
+
+    const parts: Part[] = message.data.payload?.parts
+      ?.filter((part) => part.mimeType === MimeTypeEnum.MULTIPART_ALTERNATIVE)
+      .flatMap(({ parts }) => parts)
+      .filter(Boolean)
+      .map((part) => {
+        if (!part?.body || !part?.body?.data) return { data: '', mimeType: part?.mimeType, partId: part?.partId }
+
+        return { data: Buffer.from(part.body.data, 'base64').toString(), mimeType: part.mimeType, partId: part.partId }
+      })
       ?? []
 
     const [from] = extractEmails(headers[HeaderEnum.FROM]?.value || '')
     const [firstTo] = extractEmails(headers[HeaderEnum.TO]?.value || '')
+    const lastPart = parts.pop()
+    const body = lastPart?.data ? convertHtmlToText(lastPart.data) : message.data.snippet || ''
+    const links = lastPart?.data ? extractTextBetweenSquareBrackets(body) : []
 
     return {
       attachments,
-      body    : message.data.snippet || '',
+      body,
       date    : headers[HeaderEnum.DATE]?.value || '',
       from,
       id      : message.data.id || '',
+      links,
       subject : headers[HeaderEnum.SUBJECT]?.value || '',
       threadId: message.data.threadId || '',
       to      : firstTo
@@ -113,7 +130,7 @@ export default class Gmail {
     await this.gmail.users.messages.modify({
       id         : messageId,
       requestBody: {
-        'removeLabelIds': [ LabelEnum.UNREAD ]
+        'removeLabelIds': [LabelEnum.UNREAD]
       },
       userId: user.userId
     })
@@ -123,7 +140,7 @@ export default class Gmail {
     await this.gmail.users.messages.modify({
       id         : messageId,
       requestBody: {
-        'addLabelIds': [ LabelEnum.UNREAD ]
+        'addLabelIds': [LabelEnum.UNREAD]
       },
       userId: user.userId
     })

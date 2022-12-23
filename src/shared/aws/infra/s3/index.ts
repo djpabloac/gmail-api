@@ -1,6 +1,6 @@
 import aws from 'aws-sdk'
 import { AssetType } from './constants'
-import { TokenObject } from '../../dominio/entity'
+import { TokenS3 } from '../../dominio/entity'
 
 aws.config.update({
   accessKeyId    : process.env.AWS_ACCESS_KEY_ID,
@@ -8,7 +8,7 @@ aws.config.update({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 })
 
-type MutationGetStorageTokenArgs = {
+type GetStorageTokenArgs = {
   contentType: string;
   fileName: string;
   assetType: AssetType;
@@ -41,7 +41,7 @@ export default class S3 {
     }
   }
 
-  getStorageToken(args: MutationGetStorageTokenArgs): TokenObject {
+  getStorageToken(args: GetStorageTokenArgs): TokenS3 {
     const { contentType, fileName, assetType, routeId } = args
 
     const getDate = new Date()

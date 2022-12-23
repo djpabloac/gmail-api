@@ -1,4 +1,4 @@
-export interface TokenObject {
+export interface TokenS3 {
   token: string;
   originalFileName: string;
   fileName: string;

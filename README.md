@@ -27,6 +27,8 @@ To run this project, you will need to add the following environment variables to
 
 `ENABLED_PRINT_CONSOLE=false`
 
+`ENABLED_UNREAD=false`
+
 `BUCKET_DIR=<dir_upload>`
 
 `AWS_ACCESS_KEY_ID=<access_key_id>`
