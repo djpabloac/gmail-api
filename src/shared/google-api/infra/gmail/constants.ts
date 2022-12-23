@@ -41,16 +41,3 @@ export enum HeaderEnum {
   TO = 'To',
   CONTENT_TYPE = 'Content-Type'
 }
-
-export enum MimeTypeEnum {
-  MULTIPART_ALTERNATIVE = 'multipart/alternative',
-  APPLICATION_PDF = 'application/pdf',
-  APPLICATION_MSWORD = 'application/msword',
-  APPLICATION_VND_MSWORD = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  TEXT_HTML = 'text/html'
-}
-
-export const FileType = {
-  [MimeTypeEnum.APPLICATION_MSWORD.toString()]: 'doc',
-  [MimeTypeEnum.APPLICATION_PDF.toString()]   : 'pdf'
-}

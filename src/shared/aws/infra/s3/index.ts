@@ -1,4 +1,5 @@
 import aws from 'aws-sdk'
+import axios from 'axios'
 import { AssetType } from './constants'
 import { TokenS3 } from '../../dominio/entity'
 
@@ -55,9 +56,6 @@ export default class S3 {
 
     const key = `${relativeDirName}/${relativeFileName}`
 
-    // eslint-disable-next-line no-console
-    console.log('key', key)
-
     const acl = 'public-read'
 
     const url = this.s3.getSignedUrl('putObject', {
@@ -79,5 +77,19 @@ export default class S3 {
       token           : url,
       url             : urlS3
     }
+  }
+
+  async upload(args: TokenS3) {
+    const { contentType, acl, token, data } = args
+    if(!data) throw new Error('data is required')
+
+    const options = {
+      headers: {
+        'Content-Type': contentType,
+        'x-amz-acl'   : acl
+      }
+    }
+
+    await axios.put(token, data, options)
   }
 }

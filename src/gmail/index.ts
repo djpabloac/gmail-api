@@ -4,10 +4,11 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { config } from '../shared/config'
 import { Auth, Gmail } from '../shared/google-api/infra'
-import { FileType, LabelEnum } from '../shared/google-api/infra/gmail/constants'
+import { LabelEnum } from '../shared/google-api/infra/gmail/constants'
 import { keyBy } from '../utils/array'
-import { QueryTypeEnum } from './constants'
+import { FileExtensionEnum, FileType } from '../utils/constants'
 import { matchPath, urlParse } from '../utils/parse'
+import { QueryTypeEnum } from './constants'
 
 const fs = FS.promises
 
@@ -115,7 +116,7 @@ export async function processMessageUnread() {
         if (!attachmentWithData.mimeType) continue
 
         const attachmentId = attachmentWithData.attachmentId ? attachmentWithData.attachmentId : uuidv4()
-        const fileType = FileType[attachmentWithData.mimeType] ?? 'txt'
+        const fileType = FileType[attachmentWithData.mimeType] ?? FileExtensionEnum.TXT
 
         const filename = attachmentWithData.filename ?
           attachmentWithData.filename :

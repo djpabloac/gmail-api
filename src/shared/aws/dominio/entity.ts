@@ -1,3 +1,5 @@
+import { Maybe } from '../../../utils/types'
+
 export interface TokenS3 {
   token: string;
   originalFileName: string;
@@ -6,4 +8,5 @@ export interface TokenS3 {
   contentType: string;
   acl: string;
   url: string;
+  data?: Maybe<string | Buffer | Uint8Array | Blob>;
 }

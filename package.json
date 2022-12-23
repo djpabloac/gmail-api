@@ -25,6 +25,7 @@
   "dependencies": {
     "@google-cloud/local-auth": "2.1.0",
     "aws-sdk": "^2.1279.0",
+    "axios": "^1.2.1",
     "dotenv": "^16.0.3",
     "googleapis": "105",
     "html-to-text": "^9.0.3",

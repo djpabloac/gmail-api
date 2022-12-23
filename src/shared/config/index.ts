@@ -38,12 +38,13 @@ const configs: Record<string, Config> = {
   [Env.DEVELOPMENT]: {
     ...configBase,
     stage: {
-      enabledMessageUnread: true,
+      enabledMessageUnread: false,
       enabledUpload       : true
     },
     endpoint: {
       applyingApi: 'https://gtw-applying.krowdyspace.com',
-      applying   : 'https://applying.krowdyspace.com'
+      // applying   : 'https://applying.krowdyspace.com'
+      applying   : 'https://applying.krowdy.com'
     }
   },
   [Env.STAGING]: {

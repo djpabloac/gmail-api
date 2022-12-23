@@ -35,7 +35,7 @@ export const matchPath = <T>(pathName: string, path: string): T | null => {
   const paths = path.split('/')
 
   const initParams = <Record<string, string>>{}
-  const params = paths
+  const params: unknown = paths
     .map((path, index) => ({ key: path, value: pathNames[index] }))
     .filter(({ key }) => Boolean(key) && key.includes(':'))
     .reduce((prev, next) => ({ ...prev, [next.key.replace(':', '')]: next.value }), initParams)

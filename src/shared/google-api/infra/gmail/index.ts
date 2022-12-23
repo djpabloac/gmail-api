@@ -3,9 +3,10 @@ import { OAuth2Client } from 'google-auth-library'
 import { GaxiosResponse } from 'gaxios'
 import { keyBy } from '../../../../utils/array'
 import { Attachment, Part, MessageSimple } from '../../dominio/entity'
-import { HeaderEnum, LabelEnum, MimeTypeEnum, user } from './constants'
+import { HeaderEnum, LabelEnum, user } from './constants'
 import { extractEmails, extractTextBetweenSquareBrackets } from '../../../../utils/regex'
 import { convertHtmlToText } from '../../../../utils/convert'
+import { MimeTypeEnum } from '../../../../utils/constants'
 
 type LabelsArgs = gmail_v1.Schema$Label[] | undefined
 
