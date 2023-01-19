@@ -37,6 +37,14 @@ To run this project, you will need to add the following environment variables to
 
 `AWS_REGION=<region>`
 
+Note: Environment variables for dev.
+
+`ENABLED_MESSAGE_UNREAD=true`
+
+`ENABLED_UPLOAD=true`
+
+`PROFILE_ID`
+
 ## Authors
 
 - [@dj.pablo.ac](https://gitlab.com/dj.pablo.ac)

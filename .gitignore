@@ -7,3 +7,4 @@ credentials.json
 token.json
 src/gmail/download/*
 .DS_Store
+yarn-error

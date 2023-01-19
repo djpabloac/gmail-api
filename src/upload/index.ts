@@ -16,6 +16,13 @@ const PATH_DIRNAME_DOWNLOAD = path.join(process.cwd(), `${config.pathDirNameDown
 export async function processUpload() {
   console.log(FLAG_MONITOR, '-----------------------', 'Start', '-----------------------')
   try {
+    const profileId = process.env.PROFILE_ID
+    if(!profileId) {
+      console.log(FLAG_MONITOR, 'profileId is required')
+
+      return
+    }
+
     console.log(FLAG_MONITOR, 'Read folder upload')
     const folders = await fs.readdir(PATH_DIRNAME_DOWNLOAD)
     if (!folders.length) {
@@ -42,7 +49,6 @@ export async function processUpload() {
     if (ENABLED_PRINT_CONSOLE) console.log(FLAG_MONITOR, files)
 
     const s3 = new S3()
-    const profileId = '63a1d33025d28e0008cb9490'
     for (let indexUpload = 0; indexUpload < files.length; indexUpload++) {
       const pathFile = files[indexUpload]
       const data = await fs.readFile(pathFile)

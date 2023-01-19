@@ -22,7 +22,7 @@ export default class S3 {
 
   constructor() {
     this.s3 = new aws.S3({ signatureVersion: 'v4' })
-    this.bucketDir = process.env.BUCKET_DIR || 'test.krowdy.apps'
+    this.bucketDir = process.env.BUCKET_DIR || ''
   }
 
   getKeyDir(routeId: string, assetType: AssetType) {

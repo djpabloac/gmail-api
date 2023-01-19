@@ -32,5 +32,8 @@
     "imap-simple": "^5.1.0",
     "urlencode3": "^1.0.1",
     "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=16.8.0"
   }
 }

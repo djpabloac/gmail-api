@@ -5,16 +5,16 @@ interface ConfigBase {
   fileExclude: string[];
   isDevelopment: boolean;
   pathDirNameDownload: string;
-}
-
-interface Config extends ConfigBase {
   stage: {
     enabledMessageUnread: boolean;
     enabledUpload: boolean;
   };
+}
+
+interface Config extends ConfigBase {
   endpoint: {
-    applyingApi: string;
-    applying: string;
+    backendApi: string;
+    frontend: string;
   }
 }
 
@@ -31,31 +31,26 @@ const configBase: ConfigBase = {
     '.DS_Store'
   ],
   isDevelopment      : [Env.DEVELOPMENT, Env.STAGING].includes(process.env.NODE_ENV || Env.DEVELOPMENT),
-  pathDirNameDownload: 'src/gmail/download'
+  pathDirNameDownload: 'src/gmail/download',
+  stage              : {
+    enabledMessageUnread: process.env.ENABLED_MESSAGE_UNREAD === 'true',
+    enabledUpload       : process.env.ENABLED_UPLOAD === 'true'
+  }
 }
 
 const configs: Record<string, Config> = {
   [Env.DEVELOPMENT]: {
     ...configBase,
-    stage: {
-      enabledMessageUnread: false,
-      enabledUpload       : true
-    },
     endpoint: {
-      applyingApi: 'https://gtw-applying.krowdyspace.com',
-      // applying   : 'https://applying.krowdyspace.com'
-      applying   : 'https://applying.krowdy.com'
+      backendApi: '',
+      frontend  : ''
     }
   },
   [Env.STAGING]: {
     ...configBase,
-    stage: {
-      enabledMessageUnread: true,
-      enabledUpload       : true
-    },
     endpoint: {
-      applyingApi: 'https://gtw-applying.krowdy.network',
-      applying   : 'https://applying.krowdy.network'
+      backendApi: '',
+      frontend  : ''
     }
   },
   [Env.PRODUCTION]: {
@@ -65,8 +60,8 @@ const configs: Record<string, Config> = {
       enabledUpload       : true
     },
     endpoint: {
-      applyingApi: 'https://gtw-applying.krowdy.com',
-      applying   : 'https://applying.krowdy.com'
+      backendApi: '',
+      frontend  : ''
     }
   }
 }

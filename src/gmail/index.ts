@@ -30,7 +30,7 @@ function getJobIdByLinks(links: string[]): string | null {
   if (!linkApplying) return null
 
   const [pathName] = linkApplying
-    .replace(config.endpoint.applying, '')
+    .replace(config.endpoint.frontend, '')
     .split('?')
 
   const params = matchPath<{jobId: string; publication: number}>(pathName, '/job/:jobId/publication/:publication')
