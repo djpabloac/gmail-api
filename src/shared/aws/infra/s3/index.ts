@@ -1,13 +1,8 @@
-import aws from 'aws-sdk'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import axios from 'axios'
 import { AssetType } from './constants'
 import { TokenS3 } from '../../dominio/entity'
-
-aws.config.update({
-  accessKeyId    : process.env.AWS_ACCESS_KEY_ID,
-  region         : process.env.AWS_REGION,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-})
 
 type GetStorageTokenArgs = {
   contentType: string;
@@ -17,11 +12,17 @@ type GetStorageTokenArgs = {
 };
 
 export default class S3 {
-  s3: aws.S3
+  s3: S3Client
   bucketDir: string
 
   constructor() {
-    this.s3 = new aws.S3({ signatureVersion: 'v4' })
+    this.s3 = new S3Client({
+      credentials: {
+        accessKeyId    : process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+      },
+      region: process.env.AWS_REGION || ''
+    })
     this.bucketDir = process.env.BUCKET_DIR || ''
   }
 
@@ -42,7 +43,7 @@ export default class S3 {
     }
   }
 
-  getStorageToken(args: GetStorageTokenArgs): TokenS3 {
+  async getStorageToken(args: GetStorageTokenArgs): Promise<TokenS3> {
     const { contentType, fileName, assetType, routeId } = args
 
     const getDate = new Date()
@@ -58,15 +59,16 @@ export default class S3 {
 
     const acl = 'public-read'
 
-    const url = this.s3.getSignedUrl('putObject', {
+    const command = new PutObjectCommand({
       ACL        : acl,
       Bucket     : this.bucketDir,
       ContentType: contentType,
-      Expires    : 3600,
       Key        : key
     })
 
-    const urlS3 = url.substr(0, url.indexOf('?'))
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 })
+
+    const urlS3 = url.substring(0, url.indexOf('?'))
 
     return {
       acl,

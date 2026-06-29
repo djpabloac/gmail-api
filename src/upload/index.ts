@@ -55,7 +55,7 @@ export async function processUpload() {
       const fileName = pathFile.split('/').pop() || new Date().toISOString()
       const fileExtension = fileName.split('.').pop() || MimeTypeEnum.TEXT_PLAIN
 
-      const tokenS3 = s3.getStorageToken({
+      const tokenS3 = await s3.getStorageToken({
         assetType  : AssetType.CV,
         contentType: FileExtension[fileExtension] ?? MimeTypeEnum.TEXT_PLAIN,
         fileName,
