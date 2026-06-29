@@ -1,6 +1,5 @@
 import { gmail_v1, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
-import { GaxiosResponse } from 'gaxios'
 import { keyBy } from '../../../../utils/array'
 import { Attachment, Part, MessageSimple } from '../../dominio/entity'
 import { HeaderEnum, LabelEnum, user } from './constants'
@@ -11,7 +10,7 @@ import { MimeTypeEnum } from '../../../../utils/constants'
 type LabelsArgs = gmail_v1.Schema$Label[] | undefined
 
 type ParseAttachmentToAttachmentSimpleWithDataArgs = {
-  attachmentBody: GaxiosResponse<gmail_v1.Schema$MessagePartBody>;
+  attachmentBody: { data: gmail_v1.Schema$MessagePartBody };
   attachment: Attachment;
 }
 
@@ -35,31 +34,31 @@ export default class Gmail {
     return res.data.labels
   }
 
-  async getMessagesByLabelIds(labelIds: string[]): Promise<GaxiosResponse<gmail_v1.Schema$ListMessagesResponse>> {
+  async getMessagesByLabelIds(labelIds: string[]) {
     const messages = await this.gmail.users.messages.list({ labelIds, userId: user.userId })
 
     return messages
   }
 
-  async getMessageById(id: string): Promise<GaxiosResponse<gmail_v1.Schema$Message>> {
+  async getMessageById(id: string) {
     const message = await this.gmail.users.messages.get({ id, userId: user.userId })
 
     return message
   }
 
-  parseMessageToMessageSimple(message: GaxiosResponse<gmail_v1.Schema$Message>): MessageSimple {
+  parseMessageToMessageSimple(message: Awaited<ReturnType<typeof this.getMessageById>>): MessageSimple {
     const mimeTypeAttachment = [MimeTypeEnum.APPLICATION_PDF, MimeTypeEnum.APPLICATION_MSWORD, MimeTypeEnum.APPLICATION_VND_MSWORD]
-    const headers = keyBy(message.data.payload?.headers ?? [], 'name')
+    const headers = keyBy(message.data.payload?.headers ?? [], 'name') as Record<string, gmail_v1.Schema$MessagePartHeader>
     const attachments: Attachment[] = message.data.payload?.parts
-      ?.filter((part) => part.mimeType && mimeTypeAttachment.includes(part.mimeType as MimeTypeEnum))
-      .map(({ filename, mimeType, partId, body }) => ({ attachmentId: body?.attachmentId, filename, mimeType, partId }))
+      ?.filter((part: gmail_v1.Schema$MessagePart) => part.mimeType && mimeTypeAttachment.includes(part.mimeType as MimeTypeEnum))
+      .map(({ filename, mimeType, partId, body }: gmail_v1.Schema$MessagePart) => ({ attachmentId: body?.attachmentId, filename, mimeType, partId }))
       ?? []
 
     const parts: Part[] = message.data.payload?.parts
-      ?.filter((part) => part.mimeType === MimeTypeEnum.MULTIPART_ALTERNATIVE)
-      .flatMap(({ parts }) => parts)
+      ?.filter((part: gmail_v1.Schema$MessagePart) => part.mimeType === MimeTypeEnum.MULTIPART_ALTERNATIVE)
+      .flatMap(({ parts }: gmail_v1.Schema$MessagePart) => parts ?? [])
       .filter(Boolean)
-      .map((part) => {
+      .map((part: gmail_v1.Schema$MessagePart) => {
         if (!part?.body || !part?.body?.data) return { data: '', mimeType: part?.mimeType, partId: part?.partId }
 
         return { data: Buffer.from(part.body.data, 'base64').toString(), mimeType: part.mimeType, partId: part.partId }
@@ -91,7 +90,7 @@ export default class Gmail {
     return this.parseMessageToMessageSimple(message)
   }
 
-  async getAttachmentWithDataByIdAndMessageId(args: { attachmentId: string, messageId: string }): Promise<GaxiosResponse<gmail_v1.Schema$MessagePartBody>> {
+  async getAttachmentWithDataByIdAndMessageId(args: { attachmentId: string, messageId: string }) {
     const attachment = await this.gmail.users.messages.attachments.get({
       id       : args.attachmentId,
       messageId: args.messageId,

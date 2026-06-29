@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-import FS from 'fs'
-import path from 'path'
-import process from 'process'
-import { OAuth2Client } from 'google-auth-library'
+import FS from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
+import { OAuth2Client, UserRefreshClient } from 'google-auth-library'
 import { authenticate } from '@google-cloud/local-auth'
-import { google } from 'googleapis'
 
 const fs = FS.promises
 
@@ -24,8 +23,8 @@ export default class Auth {
       const content = await fs.readFile(TOKEN_PATH)
       const credentials = JSON.parse(content.toString())
 
-      return google.auth.fromJSON(credentials) as OAuth2Client
-    } catch (err) {
+      return UserRefreshClient.fromJSON(credentials) as unknown as OAuth2Client
+    } catch {
       return null
     }
   }
@@ -55,7 +54,7 @@ export default class Auth {
     })
 
     if (newClient.credentials) {
-      await this.saveCredentials(newClient)
+      await this.saveCredentials(newClient as unknown as OAuth2Client)
     }
 
     return newClient

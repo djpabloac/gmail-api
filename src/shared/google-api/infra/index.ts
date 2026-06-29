@@ -1,7 +1,2 @@
-import Auth from './auth'
-import Gmail from './gmail'
-
-export {
-  Auth,
-  Gmail
-}
+export { default as Auth } from './auth'
+export { default as Gmail } from './gmail'
